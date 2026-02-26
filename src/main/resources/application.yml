@@ -1,0 +1,12 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: todolist
+  profiles:
+    active: dev
+
+app:
+  name: ToDoList
+  version: 1.0.0
