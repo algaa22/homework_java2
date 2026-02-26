@@ -1,0 +1,7 @@
+server:
+  port: 0
+
+logging:
+  level:
+    com.example.todolist: DEBUG
+    org.springframework.web: WARN
