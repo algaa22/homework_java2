@@ -1,64 +1,71 @@
 package com.example.todolist.model;
 
-import java.util.Objects;
+import jakarta.annotation.Priority;
+import jakarta.persistence.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 /**
- * Модель данных
- * Содержит основную информацию о задаче: идентификатор, заголовок, описание и статус выполнения
+ * Модель данных задачи
+ * Содержит основную информацию о задаче: идентификатор, заголовок, описание, статус выполнения,
+ * дату создания, срок выполнения, приоритет и теги
  *
  * @author anikanova a.a
- * @version 1.0
+ * @version 2.0
  */
+
+@Data
+@NoArgsConstructor
+@Entity
+@Table(name = "tasks")
 public class Task {
+
+    @Id
     private String id;
+
+    @Column(nullable = false)
     private String title;
+
     private String description;
+
     private boolean completed;
 
-    public Task() {
-        this.id = UUID.randomUUID().toString();
-    }
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "due_date")
+    private LocalDate dueDate;
+
+    @Enumerated(EnumType.STRING)
+    private Priority priority;
+
+    @ElementCollection
+    @CollectionTable(name = "task_tags", joinColumns = @JoinColumn(name = "task_id"))
+    @Column(name = "tag")
+    private Set<String> tags = new HashSet<>();
 
     public Task(String title, String description, boolean completed) {
         this.id = UUID.randomUUID().toString();
         this.title = title;
         this.description = description;
         this.completed = completed;
+        this.createdAt = LocalDateTime.now();
+        this.tags = new HashSet<>();
     }
 
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
-
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
-
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-
-    public boolean isCompleted() { return completed; }
-    public void setCompleted(boolean completed) { this.completed = completed; }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Task task = (Task) o;
-        return Objects.equals(id, task.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
-
-    @Override
-    public String toString() {
-        return "Task{" +
-                "id='" + id + '\'' +
-                ", title='" + title + '\'' +
-                ", description='" + description + '\'' +
-                ", completed=" + completed +
-                '}';
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+        if (id == null) {
+            id = UUID.randomUUID().toString();
+        }
     }
 }
