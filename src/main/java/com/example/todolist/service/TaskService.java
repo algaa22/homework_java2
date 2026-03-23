@@ -59,7 +59,8 @@ public class TaskService {
             existing.setCompleted(task.isCompleted());
         }
         if (task.getDueDate() != null) {
-            if (task.getDueDate().isBefore(existing.getCreatedAt().toLocalDate())) {
+            if (existing.getCreatedAt() != null &&
+                    task.getDueDate().isBefore(existing.getCreatedAt().toLocalDate())) {
                 throw new IllegalArgumentException("Due date cannot be before creation date");
             }
             existing.setDueDate(task.getDueDate());

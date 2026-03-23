@@ -4,24 +4,18 @@ import com.example.todolist.model.Task;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
-/**
- * Реализация репозитория задач, хранящая данные в оперативной памяти
- * Является основным (Primary) репозиторием приложения
- *
- * @author anikanova a.a
- * @version 1.0
- */
 @Repository
 @Primary
 public class InMemoryTaskRepository implements TaskRepository {
 
-    private final Map<String, Task> storage = new ConcurrentHashMap<>();
+    private final Map<Long, Task> storage = new ConcurrentHashMap<>();
+    private final AtomicLong idGenerator = new AtomicLong(1);
 
     @Override
     public List<Task> findAll() {
@@ -35,6 +29,12 @@ public class InMemoryTaskRepository implements TaskRepository {
 
     @Override
     public Task save(Task task) {
+        if (task.getId() == null) {
+            task.setId(idGenerator.getAndIncrement());
+        }
+        if (task.getCreatedAt() == null) {
+            task.setCreatedAt(LocalDateTime.now());
+        }
         storage.put(task.getId(), task);
         return task;
     }
@@ -50,12 +50,18 @@ public class InMemoryTaskRepository implements TaskRepository {
     }
 
     @Override
-    public List<Task> findAllById(Collection<Long> ids) {
-        return List.of();
+    public long count() {
+        return storage.size();
     }
 
     @Override
-    public long count() {
-        return storage.size();
+    public List<Task> findAllById(Collection<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return ids.stream()
+                .map(storage::get)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 }

@@ -9,16 +9,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
-
-/**
- * Модель данных задачи
- * Содержит основную информацию о задаче: идентификатор, заголовок, описание, статус выполнения,
- * дату создания, срок выполнения, приоритет и теги
- *
- * @author anikanova a.a
- * @version 2.0
- */
 
 @Data
 @NoArgsConstructor
@@ -27,7 +17,8 @@ import java.util.UUID;
 public class Task {
 
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(nullable = false)
     private String title;
@@ -51,7 +42,6 @@ public class Task {
     private Set<String> tags = new HashSet<>();
 
     public Task(String title, String description, boolean completed) {
-        this.id = UUID.randomUUID().toString();
         this.title = title;
         this.description = description;
         this.completed = completed;
@@ -63,9 +53,6 @@ public class Task {
     protected void onCreate() {
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
-        }
-        if (id == null) {
-            id = UUID.randomUUID().toString();
         }
     }
 }

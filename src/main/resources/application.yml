@@ -21,7 +21,7 @@ app:
   cors:
     allowed-origins:
       - http://localhost:3000
-      - http://localhost:8080
+      - http://localhost:8081
 
 springdoc:
   api-docs:
@@ -30,3 +30,4 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
     enabled: true
+    url: /v3/api-docs

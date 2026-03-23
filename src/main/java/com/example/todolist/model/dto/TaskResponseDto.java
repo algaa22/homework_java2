@@ -3,6 +3,8 @@ package com.example.todolist.model.dto;
 import com.example.todolist.model.enums.Priority;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;

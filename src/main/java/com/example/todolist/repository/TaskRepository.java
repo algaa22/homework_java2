@@ -11,7 +11,7 @@ import java.util.Optional;
  * Определяет контракт для операций CRUD с хранилищем задач
  *
  * @author anikanova a.a
- * @version 1.0
+ * @version 2.0
  */
 public interface TaskRepository {
     List<Task> findAll();

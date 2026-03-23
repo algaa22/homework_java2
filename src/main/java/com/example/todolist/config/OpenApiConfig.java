@@ -28,7 +28,7 @@ public class OpenApiConfig {
                                 .email("anikanova.aa@phystech.edu")))
                 .servers(List.of(
                         new Server()
-                                .url("http://localhost:8080")
+                                .url("http://localhost:8081")
                                 .description("Local server")
                 ));
     }
