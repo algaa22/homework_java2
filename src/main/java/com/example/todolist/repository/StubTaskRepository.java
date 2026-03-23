@@ -1,9 +1,9 @@
 package com.example.todolist.repository;
 
 import com.example.todolist.model.Task;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Заглушка репозитория задач
@@ -28,7 +28,7 @@ public class StubTaskRepository implements TaskRepository {
     }
 
     @Override
-    public Optional<Task> findById(String id) {
+    public Optional<Task> findById(Long id) {
         return stubData.stream()
                 .filter(task -> task.getId().equals(id))
                 .findFirst();
@@ -40,12 +40,27 @@ public class StubTaskRepository implements TaskRepository {
     }
 
     @Override
-    public void deleteById(String id) {
+    public void deleteById(Long id) {
         throw new UnsupportedOperationException("Stub repository doesn't support delete");
     }
 
     @Override
-    public boolean existsById(String id) {
+    public boolean existsById(Long id) {
         return stubData.stream().anyMatch(task -> task.getId().equals(id));
+    }
+
+    @Override
+    public long count() {
+        return stubData.size();
+    }
+
+    @Override
+    public List<Task> findAllById(Collection<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return stubData.stream()
+                .filter(task -> ids.contains(task.getId()))
+                .collect(Collectors.toList());
     }
 }

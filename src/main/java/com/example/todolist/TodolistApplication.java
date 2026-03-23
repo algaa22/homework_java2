@@ -9,7 +9,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
  * Запускает Spring Boot приложение и включает поддержку AOP
  *
  * @author anikanova a.a
- * @version 1.0
+ * @version 2.0
  */
 @SpringBootApplication
 @EnableAspectJAutoProxy
