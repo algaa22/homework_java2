@@ -31,7 +31,7 @@ public class TaskService {
     }
 
     @Transactional(readOnly = true)
-    public Task getTaskById(String id) {
+    public Task getTaskById(Long id) {
         return taskRepository.findById(id)
                 .orElseThrow(() -> new TaskNotFoundException("Task not found with id: " + id));
     }
@@ -46,7 +46,7 @@ public class TaskService {
     }
 
     @Transactional
-    public Task updateTask(String id, Task task) {
+    public Task updateTask(Long id, Task task) {
         Task existing = getTaskById(id);
 
         if (task.getTitle() != null) {
@@ -75,7 +75,7 @@ public class TaskService {
     }
 
     @Transactional
-    public void deleteTask(String id) {
+    public void deleteTask(Long id) {
         if (!taskRepository.existsById(id)) {
             throw new TaskNotFoundException("Task not found with id: " + id);
         }

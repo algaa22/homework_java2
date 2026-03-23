@@ -1,6 +1,6 @@
 package com.example.todolist.model;
 
-import jakarta.annotation.Priority;
+import com.example.todolist.model.enums.Priority;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;

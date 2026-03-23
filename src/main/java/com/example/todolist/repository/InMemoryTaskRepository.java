@@ -3,6 +3,8 @@ package com.example.todolist.repository;
 import com.example.todolist.model.Task;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
+
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -27,7 +29,7 @@ public class InMemoryTaskRepository implements TaskRepository {
     }
 
     @Override
-    public Optional<Task> findById(String id) {
+    public Optional<Task> findById(Long id) {
         return Optional.ofNullable(storage.get(id));
     }
 
@@ -38,12 +40,22 @@ public class InMemoryTaskRepository implements TaskRepository {
     }
 
     @Override
-    public void deleteById(String id) {
+    public void deleteById(Long id) {
         storage.remove(id);
     }
 
     @Override
-    public boolean existsById(String id) {
+    public boolean existsById(Long id) {
         return storage.containsKey(id);
+    }
+
+    @Override
+    public List<Task> findAllById(Collection<Long> ids) {
+        return List.of();
+    }
+
+    @Override
+    public long count() {
+        return storage.size();
     }
 }
