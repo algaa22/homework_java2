@@ -17,7 +17,7 @@ spring:
 
 app:
   name: ToDoList
-  version: 2.0.0
+  version: 3.0.0
   cors:
     allowed-origins:
       - http://localhost:3000
@@ -31,3 +31,8 @@ springdoc:
     path: /swagger-ui.html
     enabled: true
     url: /v3/api-docs
+
+logging:
+  level:
+    com.todolist: DEBUG
+    org.springframework.web: DEBUG
