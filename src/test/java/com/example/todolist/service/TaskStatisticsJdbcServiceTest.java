@@ -6,6 +6,8 @@ import com.example.todolist.model.Task;
 import com.example.todolist.model.enums.Priority;
 import com.example.todolist.model.enums.TaskStatus;
 import com.example.todolist.repository.TaskRepository;
+import java.sql.SQLException;
+import org.flywaydb.core.internal.jdbc.JdbcTemplate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,9 +30,15 @@ class TaskStatisticsJdbcServiceTest {
   @Autowired
   private TaskRepository taskRepository;
 
+  @Autowired
+  private JdbcTemplate jdbcTemplate;
+
+
   @BeforeEach
-  void setUp() {
+  void setUp() throws SQLException {
+    jdbcTemplate.execute("DELETE FROM tasks");
     taskRepository.deleteAll();
+    taskRepository.flush();
 
     createAndSaveTask("High Task 1", Priority.HIGH, TaskStatus.COMPLETED, true);
     createAndSaveTask("High Task 2", Priority.HIGH, TaskStatus.PENDING, false);
@@ -41,7 +49,7 @@ class TaskStatisticsJdbcServiceTest {
   private void createAndSaveTask(String title, Priority priority, TaskStatus status, boolean completed) {
     Task task = Task.builder().title(title).priority(priority).status(status).build();
     task.setCompleted(completed);
-    taskRepository.save(task);
+    taskRepository.saveAndFlush(task);
   }
 
   @Test
