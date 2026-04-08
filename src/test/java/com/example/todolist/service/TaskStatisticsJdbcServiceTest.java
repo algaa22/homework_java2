@@ -7,13 +7,13 @@ import com.example.todolist.model.enums.Priority;
 import com.example.todolist.model.enums.TaskStatus;
 import com.example.todolist.repository.TaskRepository;
 import java.sql.SQLException;
-import org.flywaydb.core.internal.jdbc.JdbcTemplate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
 
