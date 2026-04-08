@@ -1,6 +1,36 @@
-server:
-  port: 80
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/todolist_db}
+    username: ${DB_USERNAME:todolist_user}
+    password: ${DB_PASSWORD:todolist_password}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 10
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          batch_size: 30
+        order_inserts: true
+        order_updates: true
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
 
 logging:
   level:
-    com.example.todolist: WARN
+    com.todolist: WARN
+    org.springframework: WARN
+
+server:
+  port: ${PORT:8080}
