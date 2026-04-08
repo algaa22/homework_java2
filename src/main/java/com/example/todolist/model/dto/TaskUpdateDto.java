@@ -5,11 +5,10 @@ import com.example.todolist.validator.DueDateNotBeforeCreation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.Size;
+import java.util.List;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.util.Set;
 
 @Data
 @DueDateNotBeforeCreation(groups = OnUpdate.class)
@@ -34,5 +33,5 @@ public class TaskUpdateDto {
 
     @Size(max = 5, groups = OnUpdate.class)
     @Schema(description = "Task tags", example = "[\"new\", \"hometask\"]", maxLength = 5)
-    private Set<String> tags;
+    private List<String> tags;
 }

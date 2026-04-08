@@ -45,6 +45,13 @@ public class TaskAttachment {
     @Column(name = "uploaded_at", nullable = false, updatable = false)
     private LocalDateTime uploadedAt;
 
+    @PrePersist
+    protected void onCreate() {
+        if (uploadedAt == null) {
+            uploadedAt = LocalDateTime.now();
+        }
+    }
+
     public String getFileUrl() {
         return "/api/attachments/" + this.id;
     }

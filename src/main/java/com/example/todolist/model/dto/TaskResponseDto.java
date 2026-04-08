@@ -2,12 +2,11 @@ package com.example.todolist.model.dto;
 
 import com.example.todolist.model.enums.Priority;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Set;
 
 @Data
 @Schema(description = "Response DTO for task data")
@@ -35,5 +34,5 @@ public class TaskResponseDto {
     private Priority priority;
 
     @Schema(description = "Task tags", example = "[\"spring\", \"MWS\", \"homework\"]", maxLength = 5)
-    private Set<String> tags;
+    private List<String> tags;
 }

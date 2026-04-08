@@ -76,6 +76,21 @@ public class Task {
         this.tags.add(tag);
     }
 
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+        if (updatedAt == null) {
+            updatedAt = LocalDateTime.now();
+        }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
+
     public void removeTag(String tag) {
         if (this.tags != null) {
             this.tags.remove(tag);

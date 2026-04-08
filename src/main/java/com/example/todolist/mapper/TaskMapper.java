@@ -2,16 +2,16 @@ package com.example.todolist.mapper;
 
 import com.example.todolist.model.dto.*;
 import com.example.todolist.model.Task;
-import com.example.todolist.model.TaskAttachment;
 import com.example.todolist.model.enums.TaskStatus;
 import org.mapstruct.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring",
     unmappedTargetPolicy = ReportingPolicy.IGNORE,
-    imports = {TaskStatus.class})
+    imports = {TaskStatus.class, LocalDateTime.class, LocalDate.class})
 public interface TaskMapper {
 
     @Mapping(target = "id", ignore = true)
@@ -21,6 +21,7 @@ public interface TaskMapper {
     @Mapping(target = "tags", source = "tags")
     @Mapping(target = "attachments", ignore = true)
     @Mapping(target = "version", ignore = true)
+    @Mapping(target = "dueDate", expression = "java(dto.getDueDate() != null ? dto.getDueDate().atStartOfDay() : null)")
     Task toEntity(TaskCreateDto dto);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
@@ -29,12 +30,11 @@ public interface TaskMapper {
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "attachments", ignore = true)
     @Mapping(target = "version", ignore = true)
+    @Mapping(target = "dueDate", expression = "java(dto.getDueDate() != null ? dto.getDueDate().atStartOfDay() : null)")
     void updateEntity(TaskUpdateDto dto, @MappingTarget Task task);
 
     @Mapping(target = "completed", source = "status", qualifiedByName = "statusToCompleted")
-    @Mapping(target = "attachmentUrls", source = "attachments", qualifiedByName = "attachmentsToUrls")
-    @Mapping(target = "createdAt", source = "createdAt")
-    @Mapping(target = "updatedAt", source = "updatedAt")
+    @Mapping(target = "dueDate", expression = "java(task.getDueDate() != null ? task.getDueDate().toLocalDate() : null)")
     TaskResponseDto toResponseDto(Task task);
 
     List<TaskResponseDto> toResponseDtoList(List<Task> tasks);
@@ -42,19 +42,5 @@ public interface TaskMapper {
     @Named("statusToCompleted")
     default boolean statusToCompleted(TaskStatus status) {
         return status == TaskStatus.COMPLETED;
-    }
-
-    default TaskStatus completedToStatus(boolean completed) {
-        return completed ? TaskStatus.COMPLETED : TaskStatus.PENDING;
-    }
-
-    @Named("attachmentsToUrls")
-    default List<String> attachmentsToUrls(List<TaskAttachment> attachments) {
-        if (attachments == null || attachments.isEmpty()) {
-            return List.of();
-        }
-        return attachments.stream()
-            .map(attachment -> "/api/attachments/" + attachment.getId())
-            .collect(Collectors.toList());
     }
 }

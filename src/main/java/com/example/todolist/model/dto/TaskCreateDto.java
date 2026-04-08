@@ -3,6 +3,7 @@ package com.example.todolist.model.dto;
 import com.example.todolist.model.enums.Priority;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
+import java.util.List;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -23,7 +24,7 @@ public class TaskCreateDto {
     private String description;
 
     @FutureOrPresent(groups = OnCreate.class, message = "Due date must be in the present or future")
-    @Schema(description = "Due date for the task", example = "2026-03-22")
+    @Schema(description = "Due date for the task", example = "2026-04-06")
     private LocalDate dueDate;
 
     @NotNull(groups = OnCreate.class, message = "Priority is required")
@@ -32,5 +33,5 @@ public class TaskCreateDto {
 
     @Size(max = 5, groups = OnCreate.class, message = "Maximum 5 tags allowed")
     @Schema(description = "Task tags", example = "[\"homework\", \"java\", \"MWS\"]", maxLength = 5)
-    private Set<String> tags;
+    private List<String> tags;
 }

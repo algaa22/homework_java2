@@ -1,5 +1,6 @@
 package com.example.todolist.service;
 
+import com.example.todolist.model.Task;
 import com.example.todolist.model.dto.AttachmentResponseDto;
 import com.example.todolist.exception.AttachmentNotFoundException;
 import com.example.todolist.exception.TaskNotFoundException;
@@ -34,53 +35,6 @@ public class AttachmentService {
 
     private final TaskAttachmentRepository attachmentRepository;
     private final TaskRepository taskRepository;
-
-    @Transactional
-    public AttachmentResponseDto storeAttachment(Long taskId, MultipartFile file) {
-        if (!taskRepository.existsById(taskId)) {
-            throw new TaskNotFoundException("Task not found with id: " + taskId);
-        }
-
-        try {
-            String originalFilename = file.getOriginalFilename();
-            String extension = "";
-            if (originalFilename != null && originalFilename.contains(".")) {
-                extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-            }
-            String storedFileName = UUID.randomUUID().toString() + extension;
-
-            Path uploadPath = Paths.get(uploadDir);
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
-
-            Path filePath = uploadPath.resolve(storedFileName);
-
-            try (InputStream inputStream = file.getInputStream()) {
-                Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
-            }
-
-            TaskAttachment attachment = new TaskAttachment();
-            attachment.setTaskId(taskId);
-            attachment.setFileName(originalFilename);
-            attachment.setStoredFileName(storedFileName);
-            attachment.setContentType(file.getContentType());
-            attachment.setSize(file.getSize());
-
-            TaskAttachment saved = attachmentRepository.save(attachment);
-
-            return AttachmentResponseDto.builder()
-                    .id(saved.getId())
-                    .fileName(saved.getFileName())
-                    .size(saved.getSize())
-                    .uploadedAt(saved.getUploadedAt())
-                    .build();
-
-        } catch (IOException e) {
-            log.error("Failed to store file", e);
-            throw new RuntimeException("Failed to store file", e);
-        }
-    }
 
     @Transactional(readOnly = true)
     public TaskAttachment getAttachment(Long attachmentId) {
@@ -125,5 +79,51 @@ public class AttachmentService {
                         .uploadedAt(a.getUploadedAt())
                         .build())
                 .toList();
+    }
+
+    @Transactional
+    public AttachmentResponseDto storeAttachment(Long taskId, MultipartFile file) {
+        Task task = taskRepository.findById(taskId)
+            .orElseThrow(() -> new TaskNotFoundException("Task not found with id: " + taskId));
+
+        try {
+            String originalFilename = file.getOriginalFilename();
+            String extension = "";
+            if (originalFilename != null && originalFilename.contains(".")) {
+                extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            }
+            String storedFileName = UUID.randomUUID().toString() + extension;
+
+            Path uploadPath = Paths.get(uploadDir);
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+
+            Path filePath = uploadPath.resolve(storedFileName);
+
+            try (InputStream inputStream = file.getInputStream()) {
+                Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+            }
+
+            TaskAttachment attachment = new TaskAttachment();
+            attachment.setTask(task);
+            attachment.setFileName(originalFilename);
+            attachment.setStoredFileName(storedFileName);
+            attachment.setContentType(file.getContentType());
+            attachment.setSize(file.getSize());
+
+            TaskAttachment saved = attachmentRepository.save(attachment);
+
+            return AttachmentResponseDto.builder()
+                .id(saved.getId())
+                .fileName(saved.getFileName())
+                .size(saved.getSize())
+                .uploadedAt(saved.getUploadedAt())
+                .build();
+
+        } catch (IOException e) {
+            log.error("Failed to store file", e);
+            throw new RuntimeException("Failed to store file", e);
+        }
     }
 }

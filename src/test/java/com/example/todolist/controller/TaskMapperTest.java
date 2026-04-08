@@ -7,13 +7,18 @@ import com.example.todolist.model.dto.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
+@ActiveProfiles("test")
 class TaskMapperTest {
 
     @Autowired
@@ -26,15 +31,16 @@ class TaskMapperTest {
         dto.setDescription("Test Description");
         dto.setDueDate(LocalDate.of(2025, 11, 10));
         dto.setPriority(Priority.HIGH);
-        dto.setTags(Set.of("test", "java"));
+        dto.setTags(List.of("test", "java"));
 
         Task task = taskMapper.toEntity(dto);
 
         assertThat(task).isNotNull();
         assertThat(task.getTitle()).isEqualTo("Test Task");
         assertThat(task.getDescription()).isEqualTo("Test Description");
-        assertThat(task.getDueDate()).isEqualTo(LocalDate.of(2025, 11, 10));
+        assertThat(task.getDueDate()).isEqualTo(LocalDateTime.of(2025, 11, 10, 0, 0, 0));
         assertThat(task.getPriority()).isEqualTo(Priority.HIGH);
+
         assertThat(task.getTags()).containsExactlyInAnyOrder("test", "java");
         assertThat(task.isCompleted()).isFalse();
         assertThat(task.getId()).isNull();
@@ -67,7 +73,11 @@ class TaskMapperTest {
         task.setDescription("Test Description");
         task.setCompleted(true);
         task.setPriority(Priority.MEDIUM);
-        task.setTags(Set.of("test"));
+
+        List<String> tags = new ArrayList<>();
+        tags.add("test");
+        task.setTags(tags);
+        task.setDueDate(LocalDateTime.of(2025, 11, 10, 12, 0));
 
         TaskResponseDto dto = taskMapper.toResponseDto(task);
 

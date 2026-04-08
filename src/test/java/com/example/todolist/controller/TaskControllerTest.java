@@ -4,6 +4,7 @@ import com.example.todolist.model.enums.Priority;
 import com.example.todolist.model.dto.TaskCreateDto;
 import com.example.todolist.model.dto.TaskResponseDto;
 import com.example.todolist.model.dto.TaskUpdateDto;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +16,6 @@ import org.springframework.http.*;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -42,7 +42,7 @@ public class TaskControllerTest {
         dto.setDescription("Test Description");
         dto.setDueDate(LocalDate.now().plusDays(7));
         dto.setPriority(Priority.MEDIUM);
-        dto.setTags(Set.of("test"));
+        dto.setTags(List.of("test"));
         return dto;
     }
 
@@ -50,7 +50,7 @@ public class TaskControllerTest {
     void getAllTasks_List() {
         ResponseEntity<TaskResponseDto[]> response = restTemplate.getForEntity(baseUrl, TaskResponseDto[].class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getHeaders().get("X-API-Version")).contains("2.0.0");
+        assertThat(response.getHeaders().get("X-API-Version")).contains("3.0.0");
         assertThat(response.getHeaders().get("X-Total-Count")).isNotNull();
     }
 
@@ -70,7 +70,7 @@ public class TaskControllerTest {
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().getId()).isEqualTo(created.getId());
         assertThat(response.getBody().getTitle()).isEqualTo("Task for Get");
-        assertThat(response.getHeaders().get("X-API-Version")).contains("2.0.0");
+        assertThat(response.getHeaders().get("X-API-Version")).contains("3.0.0");
     }
 
     @Test
@@ -134,7 +134,7 @@ public class TaskControllerTest {
     @Test
     void createTask_WithMoreThan5Tags_BadRequest() {
         TaskCreateDto createDto = createTestTaskDto("Task");
-        createDto.setTags(Set.of("1", "2", "3", "4", "5", "6"));
+        createDto.setTags(List.of("1", "2", "3", "4", "5", "6"));
 
         ResponseEntity<String> response = restTemplate.postForEntity(baseUrl, createDto, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -163,7 +163,7 @@ public class TaskControllerTest {
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().getTitle()).isEqualTo("Updated Title");
         assertThat(response.getBody().isCompleted()).isTrue();
-        assertThat(response.getHeaders().get("X-API-Version")).contains("2.0.0");
+        assertThat(response.getHeaders().get("X-API-Version")).contains("3.0.0");
     }
 
     @Test
@@ -215,7 +215,7 @@ public class TaskControllerTest {
                 Void.class
         );
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
-        assertThat(response.getHeaders().get("X-API-Version")).contains("2.0.0");
+        assertThat(response.getHeaders().get("X-API-Version")).contains("3.0.0");
 
         ResponseEntity<String> getResponse = restTemplate.getForEntity(
                 baseUrl + "/" + created.getId(),
@@ -239,6 +239,6 @@ public class TaskControllerTest {
     void headers_ContainApiVersion() {
         ResponseEntity<TaskResponseDto[]> response = restTemplate.getForEntity(baseUrl, TaskResponseDto[].class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getHeaders().get("X-API-Version")).contains("2.0.0");
+        assertThat(response.getHeaders().get("X-API-Version")).contains("3.0.0");
     }
 }

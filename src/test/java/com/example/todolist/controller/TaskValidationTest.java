@@ -5,6 +5,7 @@ import com.example.todolist.model.dto.TaskCreateDto;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -64,7 +65,7 @@ class TaskValidationTest {
         TaskCreateDto dto = new TaskCreateDto();
         dto.setTitle("Valid Title");
         dto.setPriority(com.example.todolist.model.enums.Priority.HIGH);
-        dto.setTags(Set.of("1", "2", "3", "4", "5", "6"));
+        dto.setTags(List.of("1", "2", "3", "4", "5", "6"));
 
         Set<ConstraintViolation<TaskCreateDto>> violations = validator.validate(dto, OnCreate.class);
 
