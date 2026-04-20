@@ -1,124 +1,160 @@
 package com.example.todolist.service;
 
+import com.example.todolist.exception.BulkOperationException;
+import com.example.todolist.exception.TaskNotFoundException;
 import com.example.todolist.model.Task;
 import com.example.todolist.repository.TaskRepository;
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.ObjectFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Сервисный слой для управления задачами.
  * Содержит бизнес-логику приложения.
- * Демонстрирует жизненный цикл бина через @PostConstruct и @PreDestroy.
  *
- * @author Student
- * @version 1.0
+ * @author anikanova a.a
+ * @version 3.0
  */
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class TaskService {
 
-    private static final Logger log = LoggerFactory.getLogger(TaskService.class);
-
     private final TaskRepository taskRepository;
-    private final Map<String, Task> taskCache = new ConcurrentHashMap<>();
-    private final ObjectFactory<RequestScopedBean> requestScopedBeanFactory;
-    private final ObjectFactory<PrototypeScopedBean> prototypeScopedBeanFactory;
 
-    @Value("${app.name}")
-    private String appName;
-
-    @Autowired
-    public TaskService(TaskRepository taskRepository,
-                       ObjectFactory<RequestScopedBean> requestScopedBeanFactory,
-                       ObjectFactory<PrototypeScopedBean> prototypeScopedBeanFactory) {
-        this.taskRepository = taskRepository;
-        this.requestScopedBeanFactory = requestScopedBeanFactory;
-        this.prototypeScopedBeanFactory = prototypeScopedBeanFactory;
-        log.info("TaskService constructor");
-    }
-
-    @PostConstruct
-    public void init() {
-        log.info("@PostConstruct: Initializing cache for {}", appName);
-        taskRepository.findAll().stream()
-                .limit(2)
-                .forEach(task -> taskCache.put(task.getId(), task));
-        log.info("Cache initialized with {} tasks", taskCache.size());
-    }
-
-    @PreDestroy
-    public void destroy() {
-        log.info("@PreDestroy: Cleaning up. Cache size: {}", taskCache.size());
-        taskCache.clear();
-    }
-
+    @Transactional(readOnly = true)
     public List<Task> getAllTasks() {
-        RequestScopedBean requestBean = requestScopedBeanFactory.getObject();
-        log.info("Processing request ID: {}", requestBean.getRequestId());
         return taskRepository.findAll();
     }
 
-    public Task getTaskById(String id) {
-        RequestScopedBean requestBean = requestScopedBeanFactory.getObject();
-        log.info("Getting task by ID: {} (request: {})", id, requestBean.getRequestId());
-
+    @Transactional(readOnly = true)
+    public Task getTaskById(Long id) {
         return taskRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Task not found: " + id));
+            .orElseThrow(() -> new TaskNotFoundException("Task not found with id: " + id));
     }
 
+    @Transactional(readOnly = true)
+    public Task getTaskWithAttachments(Long id) {
+        log.debug("Getting task with attachments, id: {}", id);
+        return taskRepository.findByIdWithAttachments(id)
+            .orElseThrow(() -> new TaskNotFoundException("Task not found with id: " + id));
+    }
+
+    @Transactional(readOnly = true)
+    public List<Task> getAllTasksWithAttachments() {
+        log.debug("Getting all tasks with attachments");
+        return taskRepository.findAllWithAttachments();
+    }
+
+    @Transactional
     public Task createTask(Task task) {
-        if (task.getId() == null || task.getId().isEmpty()) {
-            PrototypeScopedBean prototype = prototypeScopedBeanFactory.getObject();
-            String newId = prototype.generateTaskId();
-            log.info("Generated new task ID using prototype {}: {}",
-                    prototype.getInstanceId(), newId);
+        if (task.getDueDate() != null && task.getDueDate().toLocalDate()
+            .isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Due date cannot be in the past");
+        }
+        return taskRepository.save(task);
+    }
+
+    @Transactional
+    public Task updateTask(Long id, Task task) {
+        Task existing = getTaskById(id);
+
+        if (task.getTitle() != null) {
+            existing.setTitle(task.getTitle());
+        }
+        if (task.getDescription() != null) {
+            existing.setDescription(task.getDescription());
+        }
+        if (task.isCompleted() != existing.isCompleted()) {
+            existing.setCompleted(task.isCompleted());
+        }
+        if (task.getDueDate() != null) {
+            if (existing.getCreatedAt() != null &&
+                task.getDueDate().toLocalDate().isBefore(existing.getCreatedAt().toLocalDate())) {
+                throw new IllegalArgumentException("Due date cannot be before creation date");
+            }
+            existing.setDueDate(task.getDueDate());
+        }
+        if (task.getPriority() != null) {
+            existing.setPriority(task.getPriority());
+        }
+        if (task.getTags() != null && !task.getTags().isEmpty()) {
+            existing.setTags(task.getTags());
         }
 
-        Task saved = taskRepository.save(task);
-        taskCache.put(saved.getId(), saved);
-        return saved;
+        return taskRepository.save(existing);
     }
 
-    public Task updateTask(String id, Task task) {
-        Task existing = getTaskById(id);
-        existing.setTitle(task.getTitle());
-        existing.setDescription(task.getDescription());
-        existing.setCompleted(task.isCompleted());
-        Task updated = taskRepository.save(existing);
-        taskCache.put(id, updated);
-        return updated;
-    }
-
-    public void deleteTask(String id) {
+    @Transactional
+    public void deleteTask(Long id) {
         if (!taskRepository.existsById(id)) {
-            throw new RuntimeException("Task not found with id: " + id);
+            throw new TaskNotFoundException("Task not found with id: " + id);
         }
         taskRepository.deleteById(id);
-        taskCache.remove(id);
     }
-    public void demonstrateScopes() {
-        log.info("========== SCOPE DEMONSTRATION ==========");
 
-        RequestScopedBean req1 = requestScopedBeanFactory.getObject();
-        RequestScopedBean req2 = requestScopedBeanFactory.getObject();
-        log.info("Request beans - same instance? {}", req1 == req2);
-        log.info("  req1 ID: {}", req1.getRequestId());
-        log.info("  req2 ID: {}", req2.getRequestId());
+    @Transactional(readOnly = true)
+    public long count() {
+        return taskRepository.count();
+    }
 
-        PrototypeScopedBean proto1 = prototypeScopedBeanFactory.getObject();
-        PrototypeScopedBean proto2 = prototypeScopedBeanFactory.getObject();
-        log.info("Prototype beans - same instance? {}", proto1 == proto2);
-        log.info("  proto1 ID: {}", proto1.getInstanceId());
-        log.info("  proto2 ID: {}", proto2.getInstanceId());
+    @Transactional(
+        propagation = Propagation.REQUIRED,
+        isolation = Isolation.READ_COMMITTED,
+        rollbackFor = {BulkOperationException.class, TaskNotFoundException.class, Exception.class},
+        noRollbackFor = {IllegalArgumentException.class},
+        timeout = 30
+    )
+    public void bulkCompleteTasks(List<Long> ids) {
+        log.info("Starting bulk complete for {} tasks", ids.size());
 
-        log.info("==========================================");
+        if (ids == null || ids.isEmpty()) {
+            throw new IllegalArgumentException("Task IDs list cannot be null or empty");
+        }
+
+        List<Task> tasks = taskRepository.findAllById(ids);
+
+        if (tasks.size() != ids.size()) {
+            List<Long> foundIds = tasks.stream()
+                .map(Task::getId)
+                .collect(Collectors.toList());
+
+            List<Long> missingIds = ids.stream()
+                .filter(id -> !foundIds.contains(id))
+                .collect(Collectors.toList());
+
+            log.error("Tasks not found: {}. Rolling back transaction!", missingIds);
+
+            throw new BulkOperationException(
+                "Some tasks were not found. Missing IDs: " + missingIds,
+                missingIds
+            );
+        }
+
+        int updatedCount = 0;
+        for (Task task : tasks) {
+            if (!task.isCompleted()) {
+                task.setCompleted(true);
+                updatedCount++;
+                log.debug("Marking task {} as completed", task.getId());
+            }
+        }
+
+        taskRepository.saveAll(tasks);
+        log.info("Successfully completed {} out of {} tasks", updatedCount, ids.size());
+    }
+
+    @Transactional(readOnly = true)
+    public List<Task> getTasksDueWithinNextSevenDays() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime sevenDaysLater = now.plusDays(7);
+        return taskRepository.findTasksDueWithinNextSevenDays(now, sevenDaysLater);
     }
 }

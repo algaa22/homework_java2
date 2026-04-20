@@ -1,0 +1,26 @@
+CREATE TABLE IF NOT EXISTS tasks (
+    id BIGSERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    priority VARCHAR(20) NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    due_date TIMESTAMP,
+    tags VARCHAR(1000) DEFAULT '[]',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    version BIGINT DEFAULT 0
+    );
+
+CREATE TABLE IF NOT EXISTS task_attachments (
+    id BIGSERIAL PRIMARY KEY,
+    task_id BIGINT NOT NULL,
+    file_name VARCHAR(255) NOT NULL,
+    stored_file_name VARCHAR(255) NOT NULL UNIQUE,
+    content_type VARCHAR(100) NOT NULL,
+    size BIGINT NOT NULL,
+    uploaded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_task_attachments_task
+    FOREIGN KEY (task_id)
+    REFERENCES tasks(id)
+    ON DELETE CASCADE
+    );

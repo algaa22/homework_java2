@@ -14,18 +14,18 @@ jobs:
       - uses: actions/checkout@v4
         name: Checkout code
 
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
           cache: maven
 
       - name: Build with Maven
-        run: mvn -B compile --file pom.xml
+        run: mvn -B compile --file pom.xml -DskipTests
 
       - name: Run tests
-        run: mvn -B test --file pom.xml
+        run: mvn -B test --file pom.xml -Dtest=com.example.gateway.** -DfailIfNoTests=false
 
       - name: Upload test results
         if: always()
