@@ -14,6 +14,8 @@ server:
   port: 8081
 
 logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{36} traceId=%X{traceId} - %msg%n"
   level:
     com.example.gateway: DEBUG
     org.springframework.web: DEBUG
@@ -41,6 +43,7 @@ resilience4j:
           - com.example.gateway.exception.ExternalApiException
           - org.springframework.web.client.HttpServerErrorException
           - java.io.IOException
+          - org.springframework.web.client.RestClientException
   ratelimiter:
     instances:
       externalApi:
