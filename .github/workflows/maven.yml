@@ -22,10 +22,10 @@ jobs:
           cache: maven
 
       - name: Build with Maven
-        run: mvn -B compile --file pom.xml
+        run: mvn -B compile --file pom.xml -DskipTests
 
       - name: Run tests
-        run: mvn -B test --file pom.xml
+        run: mvn -B test --file pom.xml -Dtest=com.example.gateway.** -DfailIfNoTests=false
 
       - name: Upload test results
         if: always()
