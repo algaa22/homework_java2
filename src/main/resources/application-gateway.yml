@@ -1,0 +1,58 @@
+spring:
+  config:
+    activate:
+      on-profile: gateway
+  application:
+    name: gateway
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+      - org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
+
+server:
+  port: 8081
+
+logging:
+  level:
+    com.example.gateway: DEBUG
+    org.springframework.web: DEBUG
+
+jwt:
+  secret: ${JWT_SECRET:my-very-secret-key-for-jwt-that-is-at-least-256-bits-long-please-change-this-in-production}
+  expiration: 900000
+
+external:
+  api:
+    base-url: http://localhost:8081
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      externalApi:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 50
+        recordExceptions:
+          - com.example.gateway.exception.ExternalApiException
+          - org.springframework.web.client.HttpServerErrorException
+          - java.io.IOException
+  ratelimiter:
+    instances:
+      externalApi:
+        limitForPeriod: 5
+        limitRefreshPeriod: 10s
+        timeoutDuration: 0s
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics
+  endpoint:
+    health:
+      show-details: always
