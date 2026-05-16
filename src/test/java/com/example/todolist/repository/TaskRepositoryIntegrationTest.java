@@ -41,7 +41,6 @@ class TaskRepositoryIntegrationTest {
         registry.add("spring.datasource.driver-class-name", () -> "org.postgresql.Driver");
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
         registry.add("spring.flyway.enabled", () -> "false");
-        registry.add("spring.jpa.show-sql", () -> "true");
     }
 
     @Autowired

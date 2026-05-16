@@ -25,6 +25,8 @@ jobs:
         run: mvn -B compile --file pom.xml -DskipTests
 
       - name: Run tests with Testcontainers
+        env:
+          DOCKER_API_VERSION: 1.44
         run: mvn -B test --file pom.xml
 
       - name: Upload test results
