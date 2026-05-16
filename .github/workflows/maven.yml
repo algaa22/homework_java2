@@ -1,8 +1,8 @@
-name: Java CI with Maven
+name: Java CI with Maven and Testcontainers
 
 on:
   push:
-    branches: [ "main", "hometask_1" ]
+    branches: [ "main", "hometask_5" ]
   pull_request:
     branches: [ "main" ]
 
@@ -24,8 +24,8 @@ jobs:
       - name: Build with Maven
         run: mvn -B compile --file pom.xml -DskipTests
 
-      - name: Run tests
-        run: mvn -B test --file pom.xml -Dtest=com.example.gateway.** -DfailIfNoTests=false
+      - name: Run tests with Testcontainers
+        run: mvn -B test --file pom.xml
 
       - name: Upload test results
         if: always()
