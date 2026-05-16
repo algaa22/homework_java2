@@ -1,0 +1,23 @@
+.idea/
+*.iml
+
+# Build
+build/
+target/
+out/
+
+# Local config
+local.properties
+application-local.properties
+.env
+
+# Uploads
+uploads/
+
+# OS
+.DS_Store
+
+# Secrets
+.env
+.env.local
+.env.*.local
