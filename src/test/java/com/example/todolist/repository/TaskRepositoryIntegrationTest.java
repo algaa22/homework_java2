@@ -83,7 +83,7 @@ class TaskRepositoryIntegrationTest {
                 .description("Description 3")
                 .status(TaskStatus.PENDING)
                 .priority(Priority.LOW)
-                .dueDate(now.plusDays(7))
+                .dueDate(now.plusDays(6))
                 .createdAt(now)
                 .updatedAt(now)
                 .build();
